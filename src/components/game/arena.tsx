@@ -1,4 +1,4 @@
-import type { Match } from '@/lib/game';
+import { PULL_TARGET, type Match } from '@/lib/game';
 function Puller({ x, red = false, variant = 0 }: { x: number; red?: boolean; variant?: number }) {
   return <g transform={`translate(${x} ${variant * 3})`} className={`puller ${red ? 'puller-red' : ''}`}>
     <path d="M-12 245 L-25 279 L-48 286" className="character-limb" />
@@ -15,11 +15,11 @@ function Puller({ x, red = false, variant = 0 }: { x: number; red?: boolean; var
     <path d="M-13 248 L12 249" className="character-shorts" />
   </g>;
 }
-export function Arena({ match }: { match: Match }) {
+export function Arena({ match, solo = false }: { match: Match; solo?: boolean }) {
   const difference = match.players[1].score - match.players[0].score;
   const displacement = difference * 13;
   return <div className={`arena-illustration ${match.status === 'playing' ? 'arena-active' : ''}`}>
-    <svg viewBox="0 0 640 380" role="img" aria-label={`Tug of war arena, Team 1 ${match.players[0].score}, Team 2 ${match.players[1].score}`}>
+    <svg viewBox="0 0 640 380" role="img" aria-label={solo ? `Solo tug of war arena. You have pulled ${match.players[0].score} of ${PULL_TARGET} correct answers.` : `Tug of war arena, Team 1 ${match.players[0].score}, Team 2 ${match.players[1].score}`}>
       <defs><pattern id="rope-pattern" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 0 L8 8 M-4 4 L4 12" className="rope-fiber" /></pattern></defs>
       <path d="M0 275 Q80 230 155 263 Q235 214 327 260 Q434 203 530 251 Q591 225 640 251 V380 H0Z" className="hill-back" />
       <path d="M0 303 Q137 261 240 301 Q350 247 469 294 Q564 255 640 284 V380 H0Z" className="hill-front" />
@@ -33,7 +33,7 @@ export function Arena({ match }: { match: Match }) {
       <g className="rope-group" style={{ transform: `translateX(${displacement}px)` }}>
         <path d="M133 228 Q320 239 507 228" className="rope" /><path d="M133 228 Q320 239 507 228" stroke="url(#rope-pattern)" strokeWidth="5" fill="none" />
         <g><Puller x={158} variant={1} /><Puller x={224} /></g>
-        <g transform="translate(640 0) scale(-1 1)"><Puller x={158} red variant={1} /><Puller x={224} red /></g>
+        {!solo && <g transform="translate(640 0) scale(-1 1)"><Puller x={158} red variant={1} /><Puller x={224} red /></g>}
         <path d="M320 233 l-10 28 10-4 10 4Z" className="rope-ribbon" /><path d="M316 231 h8" className="ribbon-knot" />
       </g>
       <path d="M315 321 h10 l-5-8Z" className="boundary-dot" />

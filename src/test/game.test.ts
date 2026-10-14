@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { makeProblem, matchReducer, newMatch, type Settings } from '@/lib/game';
-const settings: Settings = { duration: 30, operation: 'multiplication', difficulty: 'easy' };
+import { makeProblem, matchReducer, newMatch, PULL_TARGET, type Settings } from '@/lib/game';
+const settings: Settings = { duration: 30, operation: 'multiplication', difficulty: 'easy', mode: 'duo' };
 describe('math rules', () => {
   it('creates exact integer division and nonnegative subtraction at every level', () => {
     for (const difficulty of ['easy', 'medium', 'hard'] as const) for (let i = 0; i < 100; i++) {
@@ -34,5 +34,19 @@ describe('math rules', () => {
     const state = matchReducer({ ...newMatch(settings), remaining: 1, status: 'playing' }, { type: 'tick' });
     expect(state.status).toBe('finished'); expect(state.winner).toBeNull(); expect(state.remaining).toBe(0);
     expect(matchReducer(state, { type: 'input', team: 1, key: '1', settings })).toEqual(state);
+  });
+
+  it('is winnable by one player pulling alone', () => {
+    const solo: Settings = { ...settings, mode: 'solo' };
+    let state = { ...newMatch(solo), status: 'playing' as const } as ReturnType<typeof newMatch>;
+    for (let i = 0; i < PULL_TARGET; i++) {
+      for (const key of String(state.players[0].problem.answer)) state = matchReducer(state, { type: 'input', team: 0, key, settings: solo });
+      state = matchReducer(state, { type: 'input', team: 0, key: 'enter', settings: solo });
+    }
+    expect(state.players[0].score).toBe(PULL_TARGET);
+    expect(state.players[1].score).toBe(0);
+    expect(state.status).toBe('finished');
+    expect(state.winner).toBe(0);
+    expect(state.reason).toBe('pull');
   });
 });
