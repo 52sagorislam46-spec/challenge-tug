@@ -1,9 +1,11 @@
 import { Check, Delete, RotateCcw, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import type { Player } from '@/lib/game';
-export function PlayerPanel({ team, player, disabled, onKey }: { team: 0 | 1; player: Player; disabled: boolean; onKey: (key: string) => void }) {
+export function PlayerPanel({ team, player, disabled, onKey, name, onNameChange, nameLocked }: { team: 0 | 1; player: Player; disabled: boolean; onKey: (key: string) => void; name: string; onNameChange: (value: string) => void; nameLocked: boolean }) {
   return <section className={`player-panel team-${team} ${player.feedback === 'wrong' ? 'answer-shake' : ''}`} aria-label={`Team ${team + 1} controls`}>
     <div className="team-heading"><span className="team-icon"><Zap size={21} fill="currentColor" /></span><h2>Team {team + 1}</h2><span className="team-label">{team === 0 ? 'BLUE' : 'RED'}</span></div>
+    <div className="player-name"><Input aria-label={`Team ${team + 1} player name`} placeholder={`Player name (Team ${team + 1})`} maxLength={20} disabled={nameLocked} value={name} onChange={e => onNameChange(e.target.value)} /></div>
     <div className="player-content">
       <div className="problem-label">YOUR CHALLENGE</div>
       <div className="math-problem" aria-label={`Team ${team + 1} problem`}>{player.problem.a} <span>{player.problem.symbol}</span> {player.problem.b} <span>=</span> ?</div>
