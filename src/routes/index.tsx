@@ -28,6 +28,8 @@ function isRecord(value: unknown): value is RecordMatch {
 }
 function MathGame() {
   const [settings, setSettings] = useState<Settings>(initialSettings);
+  const [names, setNames] = useState<[string, string]>(['', '']);
+  const setName = (team: 0 | 1, value: string) => setNames(prev => team === 0 ? [value, prev[1]] : [prev[0], value]);
   const [match, dispatch] = useReducer(matchReducer, initialSettings, (value) => newMatch(value, true));
   const [muted, setMuted] = useState(false);
   const [history, setHistory] = useState<RecordMatch[]>([]);
@@ -125,7 +127,7 @@ function MathGame() {
         <div className="setting-item"><label htmlFor="difficulty">DIFFICULTY</label><div className="select-wrapper"><span className={`difficulty-bars ${settings.difficulty}`}><i /><i /><i /></span><select id="difficulty" disabled={locked} value={settings.difficulty} onChange={e => updateSettings({ difficulty: e.target.value as Difficulty })}><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select><ChevronDown size={15} /></div></div>
       </section>
       <div className="game-layout">
-        <PlayerPanel team={0} player={match.players[0]} disabled={!playing} onKey={key => inputKey(0, key)} />
+        <PlayerPanel team={0} player={match.players[0]} disabled={!playing} onKey={key => inputKey(0, key)} name={names[0]} onNameChange={value => setName(0, value)} nameLocked={locked} />
         <section className="center-stage" aria-label="Live match arena">
           <div className="arena-scoreboard"><div className="scoreboard-team blue"><span className="scoreboard-dot" />TEAM 1<strong>{match.players[0].score}</strong></div><div className="match-actions scoreboard-actions">{match.status === 'ready' || match.status === 'finished' ? <Button className="start-button" onClick={startMatch}><Play size={18} fill="currentColor" />{match.status === 'finished' ? 'Play again' : 'Start match'}<ArrowRight size={18} /></Button> : <Button className="start-button pause-button" disabled={match.status === 'countdown'} onClick={() => dispatch({ type: 'pause' })}>{match.status === 'paused' ? <Play /> : <Pause />}{match.status === 'paused' ? 'Resume match' : 'Pause match'}</Button>}<Button className="reset-button" variant="outline" size="icon" aria-label="Reset match" title="Reset match" onClick={() => locked ? setRestartOpen(true) : dispatch({ type: 'reset', settings })}><RotateCcw /></Button></div><div className="scoreboard-team red"><span className="scoreboard-dot" />TEAM 2<strong>{match.players[1].score}</strong></div></div>
           <div className="arena-space"><div className="arena-state"><span className={playing ? 'live-dot' : 'status-dot'} />{match.status === 'ready' ? 'THE ARENA IS READY' : match.status === 'countdown' ? 'GET READY TO PULL' : match.status === 'paused' ? 'TAKE A BREATHER' : match.status === 'finished' ? 'WHAT A MATCH!' : 'MATCH IN PROGRESS'}</div><Arena match={match} />
@@ -136,7 +138,7 @@ function MathGame() {
           <div className="clock-below"><div className={`match-clock ${match.remaining <= 10 && playing ? 'clock-urgent' : ''}`}><span><Clock3 size={14} />{match.status === 'playing' ? 'TIME LEFT' : match.status === 'paused' ? 'PAUSED' : match.status === 'finished' ? 'FULL TIME' : 'MATCH TIMER'}</span><strong>{formatTime(match.remaining)}</strong></div></div>
           <div className="match-caption"><span className="caption-dot" />{match.status === 'ready' ? 'Two teams. One rope. Let’s do this.' : match.status === 'finished' ? winnerText : match.status === 'paused' ? 'The rope can wait. Your match is safe.' : `${operationNames[settings.operation]} · ${settings.difficulty} · First to an 8-point lead wins`}</div>
         </section>
-        <PlayerPanel team={1} player={match.players[1]} disabled={!playing} onKey={key => inputKey(1, key)} />
+        <PlayerPanel team={1} player={match.players[1]} disabled={!playing} onKey={key => inputKey(1, key)} name={names[1]} onNameChange={value => setName(1, value)} nameLocked={locked} />
       </div>
       <section className="match-bottom"><div className="bottom-label"><Trophy size={19} /><div><strong>A little friendly competition</strong><span>{history.length ? `${history.length} ${history.length === 1 ? 'match' : 'matches'} played · ${wins[0] + wins[1]} victories earned` : 'A fresh start. An even playing field.'}</span></div></div><div className="team-win-summary"><span><i className="blue-dot" /> Team 1 <strong>{wins[0]}</strong></span><span className="versus">VS</span><span><i className="red-dot" /> Team 2 <strong>{wins[1]}</strong></span><Button variant="ghost" size="icon" onClick={openHistory} aria-label="Open leaderboard" title="Leaderboard"><ArrowRight /></Button></div></section>
       <footer className="page-footer"><span><Sparkles size={14} /> Big thinking. Bigger smiles.</span><span>Made for a little healthy rivalry.</span></footer>
